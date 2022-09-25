@@ -1,0 +1,10 @@
+{
+	"alwaysActivate": false,
+	"name" : "tiltfive-steamvr",
+	"directory" : "",
+	"resourceOnly" : false,
+	"hmd_presence" :
+	[
+		"*.*"
+	]
+}

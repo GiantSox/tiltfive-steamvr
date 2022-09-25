@@ -1,12 +1,19 @@
-﻿// tiltfive-steamvr.cpp : Defines the entry point for the application.
-//
+﻿#include "tiltfive-steamvr.h"
+#include "driver.h"
 
-#include "tiltfive-steamvr.h"
 
-using namespace std;
+#define HMD_DLL_EXPORT extern "C" __declspec( dllexport )
 
-int main()
-{
-	cout << "Hello CMake." << endl;
-	return 0;
+TiltFiveSteamVRDriver driverInstance;
+
+HMD_DLL_EXPORT void* HmdDriverFactory(const char* pInterfaceName, int* pReturnCode) {
+
+	if (strcmp(vr::IServerTrackedDeviceProvider_Version, pInterfaceName) == 0) {
+		return &driverInstance;
+	}
+
+	if (pReturnCode)
+		*pReturnCode = vr::VRInitError_Init_InterfaceNotFound;
+
+	return NULL;
 }

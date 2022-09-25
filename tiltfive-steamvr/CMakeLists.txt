@@ -5,7 +5,9 @@ cmake_minimum_required (VERSION 3.8)
 
 FILE(GLOB MySources *.c *.h *.cpp )
 
-# Add source to this project's executable.
 add_library (tiltfive-steamvr SHARED ${MySources} )
 
-# TODO: Add tests and install targets if needed.
+# SteamVR requires all driver dll filenames are prefixed with "driver_"
+set_target_properties(tiltfive-steamvr PROPERTIES PREFIX "driver_")
+
+install(TARGETS tiltfive-steamvr DESTINATION ../../../bin/win64)
