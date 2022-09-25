@@ -1,9 +1,11 @@
-﻿# CMakeList.txt : Top-level CMake project file, do global configuration
-# and include sub-projects here.
+﻿# CMakeList.txt : CMake project for tiltfive-steamvr, include source and define
+# project specific logic here.
 #
 cmake_minimum_required (VERSION 3.8)
 
-project ("tiltfive-steamvr")
+FILE(GLOB MySources *.c *.h *.cpp )
 
-# Include sub-projects.
-add_subdirectory ("tiltfive-steamvr")
+# Add source to this project's executable.
+add_library (tiltfive-steamvr SHARED ${MySources} )
+
+# TODO: Add tests and install targets if needed.
