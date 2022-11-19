@@ -399,3 +399,5 @@ FodyWeavers.xsd
 
 #vs-cmake output dir
 out
+
+build/
