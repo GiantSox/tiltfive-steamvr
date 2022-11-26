@@ -15,7 +15,7 @@ void TiltFiveSteamVRDriver::Cleanup()
 
 const char* const* TiltFiveSteamVRDriver::GetInterfaceVersions()
 {
-	return nullptr;
+	return vr::k_InterfaceVersions;
 }
 
 void TiltFiveSteamVRDriver::RunFrame()

@@ -29,10 +29,25 @@ void T5Headset::DebugRequest(const char* pchRequest, char* pchResponseBuffer, ui
 
 vr::DriverPose_t T5Headset::GetPose()
 {
-	vr::DriverPose_t pose;
+	vr::HmdQuaternion_t zeroQuat{
+		1,0,0,0
+	};
+
+	vr::DriverPose_t pose = { 0 };
 	pose.deviceIsConnected = true;
 	pose.poseIsValid = true;
 	pose.poseTimeOffset = 0;	//FIXME
-	//pose.
+	pose.qDriverFromHeadRotation = zeroQuat;
+	pose.qRotation = zeroQuat;
+	pose.qWorldFromDriverRotation = zeroQuat;
+	pose.result = vr::ETrackingResult::TrackingResult_Running_OK;
+	pose.shouldApplyHeadModel = false;
+
+	/*pose.vecAngularAcceleration = zeroTranslation;
+	pose.vecAngularVelocity = zeroTranslation;
+	pose.vecDriverFromHeadTranslation = zeroTranslation;
+	pose.vecPosition = zeroTranslation;
+	pose.vecVelocity = zeroTranslation;
+	pose.*/
 	return pose;
 }
