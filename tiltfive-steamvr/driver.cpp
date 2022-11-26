@@ -3,7 +3,8 @@
 
 vr::EVRInitError TiltFiveSteamVRDriver::Init(vr::IVRDriverContext* pDriverContext)
 {
-	MessageBoxA(nullptr, "Do it you won't", "Attach a debugger now poopoohead", MB_ICONINFORMATION | MB_OK);
+	//MessageBoxA(nullptr, "Do it you won't", "Attach a debugger now poopoohead", MB_ICONINFORMATION | MB_OK);
+	VR_INIT_SERVER_DRIVER_CONTEXT(pDriverContext);
 	headsetDevice.NotifySteamVROfMyExistence();
 	return vr::EVRInitError::VRInitError_None;
 }
