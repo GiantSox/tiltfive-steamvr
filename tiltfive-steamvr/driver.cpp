@@ -1,41 +1,35 @@
 #include "driver.h"
+#include <Windows.h>
 
-vr::EVRInitError TiltFiveSteamVRDriver::Activate(uint32_t unObjectId)
+vr::EVRInitError TiltFiveSteamVRDriver::Init(vr::IVRDriverContext* pDriverContext)
 {
-	return vr::EVRInitError();
+	MessageBoxA(nullptr, "Do it you won't", "Attach a debugger now poopoohead", MB_ICONINFORMATION | MB_OK);
+	headsetDevice.NotifySteamVROfMyExistence();
+	return vr::EVRInitError::VRInitError_None;
 }
 
-void TiltFiveSteamVRDriver::Deactivate()
+void TiltFiveSteamVRDriver::Cleanup()
 {
+}
+
+const char* const* TiltFiveSteamVRDriver::GetInterfaceVersions()
+{
+	return nullptr;
+}
+
+void TiltFiveSteamVRDriver::RunFrame()
+{
+}
+
+bool TiltFiveSteamVRDriver::ShouldBlockStandbyMode()
+{
+	return false;
 }
 
 void TiltFiveSteamVRDriver::EnterStandby()
 {
 }
 
-void* TiltFiveSteamVRDriver::GetComponent(const char* pchComponentNameAndVersion)
+void TiltFiveSteamVRDriver::LeaveStandby()
 {
-	return nullptr;
-}
-
-void TiltFiveSteamVRDriver::DebugRequest(const char* pchRequest, char* pchResponseBuffer, uint32_t unResponseBufferSize)
-{
-}
-
-vr::DriverPose_t TiltFiveSteamVRDriver::GetPose()
-{
-	return vr::DriverPose_t();
-}
-
-void TiltFiveSteamVRDriver::Present(const vr::PresentInfo_t* pPresentInfo, uint32_t unPresentInfoSize)
-{
-}
-
-void TiltFiveSteamVRDriver::WaitForPresent()
-{
-}
-
-bool TiltFiveSteamVRDriver::GetTimeSinceLastVsync(float* pfSecondsSinceLastVsync, uint64_t* pulFrameCounter)
-{
-	return false;
 }
