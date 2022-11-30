@@ -13,4 +13,6 @@ add_library (tiltfive-steamvr SHARED ${MySources} )
 # SteamVR requires all driver dll filenames are prefixed with "driver_"
 set_target_properties(tiltfive-steamvr PROPERTIES PREFIX "driver_")
 
+target_link_libraries(tiltfive-steamvr d3d11.lib)
+
 install(TARGETS tiltfive-steamvr DESTINATION ../bin/win64)

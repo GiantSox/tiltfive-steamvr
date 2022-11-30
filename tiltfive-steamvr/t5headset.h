@@ -1,5 +1,8 @@
 #pragma once
 #include "../deps/openvr/openvr_driver.h"
+#include "DisplayComponent.h"
+#include "DirectModeComponent.h"
+
 class T5Headset : public vr::ITrackedDeviceServerDriver
 {
 public:
@@ -50,4 +53,8 @@ public:
 	virtual void DebugRequest(const char* pchRequest, char* pchResponseBuffer, uint32_t unResponseBufferSize) override;
 
 	virtual vr::DriverPose_t GetPose() override;
+
+protected:
+	DisplayComponent displayComponent_;
+	DirectModeComponent directModeComponent_;
 };

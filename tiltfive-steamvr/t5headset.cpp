@@ -20,6 +20,13 @@ void T5Headset::EnterStandby()
 
 void* T5Headset::GetComponent(const char* pchComponentNameAndVersion)
 {
+	if (0 == stricmp(pchComponentNameAndVersion, vr::IVRDisplayComponent_Version)) {
+		return &displayComponent_;
+	}
+	else if (0 == stricmp(pchComponentNameAndVersion, vr::IVRDriverDirectModeComponent_Version)) {
+		return &directModeComponent_;
+	}
+	
 	return nullptr;
 }
 
