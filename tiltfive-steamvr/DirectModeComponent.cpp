@@ -1,6 +1,6 @@
 #include "DirectModeComponent.h"
 
-DirectModeComponent::DirectModeComponent()
+void DirectModeComponent::InitD3D()
 {
 	DWORD createFlags = 0;
 #ifdef _DEBUG
@@ -13,10 +13,20 @@ DirectModeComponent::DirectModeComponent()
 	auto result = D3D11CreateDevice(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, createFlags, nullptr, 0,
 		D3D11_SDK_VERSION, &dxDevice_, &featLevel, &dxDeviceContext_);
 
+	dxInitialized_ = true;
+}
+
+DirectModeComponent::DirectModeComponent()
+{
+
 }
 
 void DirectModeComponent::CreateSwapTextureSet(uint32_t unPid, const SwapTextureSetDesc_t* pSwapTextureSetDesc, SwapTextureSet_t* pOutSwapTextureSet)
 {
+	if (!dxInitialized_) 
+		InitD3D();
+
+
 	auto texhandle = pOutSwapTextureSet->rSharedTextureHandles;
 
 	D3D11_TEXTURE2D_DESC desc;
@@ -33,6 +43,9 @@ void DirectModeComponent::CreateSwapTextureSet(uint32_t unPid, const SwapTexture
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
 	desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED;
 
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
 	//Gonna create 3 textures because that's what ALVR does. Dunno if there's documentation for this anywhere.
 
 	for (int i = 0; i < 3; i++)
@@ -48,7 +61,8 @@ void DirectModeComponent::CreateSwapTextureSet(uint32_t unPid, const SwapTexture
 
 		pOutSwapTextureSet->rSharedTextureHandles[i] = (vr::SharedTextureHandle_t)sharedHandle;
 
-		resource->Release();
+		//Uhh should this be released?
+		//resource->Release();
 	}
 
 
@@ -56,6 +70,15 @@ void DirectModeComponent::CreateSwapTextureSet(uint32_t unPid, const SwapTexture
 
 void DirectModeComponent::DestroySwapTextureSet(vr::SharedTextureHandle_t sharedTextureHandle)
 {
+
+}
+
+void DirectModeComponent::GetNextSwapTextureSetIndex(vr::SharedTextureHandle_t sharedTextureHandles[2], uint32_t(*pIndices)[2])
+{
+	(*pIndices)[0]++;
+	(*pIndices)[0] %= 3;
+	(*pIndices)[1]++;
+	(*pIndices)[1] %= 3;
 }
 
 void DirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
