@@ -13,6 +13,9 @@ void DirectModeComponent::InitD3D()
 	auto result = D3D11CreateDevice(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, createFlags, nullptr, 0,
 		D3D11_SDK_VERSION, &dxDevice_, &featLevel, &dxDeviceContext_);
 
+
+	t5RuntimeInterface_.InitializeHeadset();
+
 	dxInitialized_ = true;
 }
 
@@ -87,4 +90,31 @@ void DirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 
 void DirectModeComponent::Present(vr::SharedTextureHandle_t syncTexture)
 {
+	//todo: caching so that we don't call opensharedresource every constantly?
+	ID3D11Texture2D* dxSyncTex;
+	auto hr = dxDevice_->OpenSharedResource((HANDLE)syncTexture, __uuidof(ID3D11Texture2D), (void**)&dxSyncTex);
+
+	IDXGIKeyedMutex* dxgiMutex;
+	hr = dxSyncTex->QueryInterface(__uuidof(IDXGIKeyedMutex), (void**)&dxgiMutex);
+	if (FAILED(hr)) {
+		return;
+	}
+
+	hr = dxgiMutex->AcquireSync(0, 10);
+	if (FAILED(hr)) {
+		dxgiMutex->Release();
+		return;
+	}
+
+	//TODO: REMOVE REMOVE REMOVE REMOVE
+	Sleep(6);
+
+	dxgiMutex->ReleaseSync(0);
+	dxgiMutex->Release();
+
+
+	//Can we call this here? Who knows!
+	auto nextFramePose = t5RuntimeInterface_.GetPose();
+	//I am pretty sure index 0 is always the HMD. But this is still a little hacky and should be fixed.
+	vr::VRServerDriverHost()->TrackedDevicePoseUpdated(0, nextFramePose, sizeof(nextFramePose));
 }
