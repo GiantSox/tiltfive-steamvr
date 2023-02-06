@@ -1,12 +1,17 @@
 #include "T5RuntimeInterface.h"
 #include <Windows.h>
 
-void T5RuntimeInterface::InitializeHeadset()
+#include "Utils.hpp"
+
+#include "glm/glm.hpp"
+#include "glm/gtc/quaternion.hpp"
+
+void T5RuntimeInterface::InitializeHeadset(ID3D11Device* pDevice)
 {
-	//TODO: fill in platformContext (last param). Prob used for gfx init
+	//TODO: fill in platformContext (last param).
 	auto client = tiltfive::obtainClient("me.davidgoodman.tiltfivesteamvr", "0.1.0", nullptr);
 	if (!client) {
-		OutputDebugStringA("Failed to create T5 client\n");
+		utils::log("Failed to create T5 client\n");
 	}
 
 	auto serviceVersion = (*client)->getServiceVersion();
@@ -20,25 +25,34 @@ void T5RuntimeInterface::InitializeHeadset()
 
 		glassesList = (*client)->listGlasses();
 	}
-	
+
 	for (auto& glassesInstance : *glassesList) {
-		OutputDebugStringA(strcat("Found ", glassesInstance.c_str()));
+		utils::log("Found " + glassesInstance);
 	}
 
 	auto glassesObtainResult = tiltfive::obtainGlasses(glassesList->front(), *client);
 	glasses_ = *glassesObtainResult;
 
 	auto glassesFriendlyName = glasses_->getFriendlyName();
-	OutputDebugStringA(strcat("Using ", (*glassesFriendlyName).c_str()));
+	utils::log("Using " + (*glassesFriendlyName));
 
 	auto connectionHelper = glasses_->createConnectionHelper("Tilt Five SteamVR Driver");
-	auto connectionResult = connectionHelper->awaitConnection(std::chrono::seconds(10));
-	if (connectionResult)
-		OutputDebugStringA("exclusive glasses connection acquired\n");
-	else
-		OutputDebugStringA("exclusive glasses connection failed\n");
 
-	glassesInitialized_ = true;
+	auto connectionResult = connectionHelper->awaitConnection(std::chrono::seconds(10));
+	bool isExclusive = false;
+	if (connectionResult)
+	{
+		isExclusive = true;
+		utils::log("exclusive glasses connection acquired\n");
+	}
+	else
+		utils::log("exclusive glasses connection failed\n");
+
+	const auto ipdResult = glasses_->getIpd();
+	if (ipdResult)
+		ipd_ = *ipdResult;
+	if (isExclusive)
+		glassesInitialized_ = glasses_->initGraphicsContext(kT5_GraphicsApi_D3d, (LPVOID)pDevice) ? true : false;
 }
 
 vr::DriverPose_t T5RuntimeInterface::GetPose()
@@ -53,8 +67,8 @@ vr::DriverPose_t T5RuntimeInterface::GetPose()
 	if (poseResult) {
 		const auto& pose = poseResult;
 
-		outputPose.qRotation = vr::HmdQuaternion_t{ 
-			pose->rotToGLS_GBD.w, pose->rotToGLS_GBD.x, pose->rotToGLS_GBD.y, pose->rotToGLS_GBD.z};
+		outputPose.qRotation = vr::HmdQuaternion_t{
+			pose->rotToGLS_GBD.w, pose->rotToGLS_GBD.x, pose->rotToGLS_GBD.y, pose->rotToGLS_GBD.z };
 		outputPose.vecPosition[0] = pose->posGLS_GBD.x;
 		outputPose.vecPosition[1] = pose->posGLS_GBD.y;
 		outputPose.vecPosition[2] = pose->posGLS_GBD.z;
@@ -62,10 +76,50 @@ vr::DriverPose_t T5RuntimeInterface::GetPose()
 		outputPose.result = vr::ETrackingResult::TrackingResult_Running_OK;
 		outputPose.poseIsValid = true;
 		outputPose.deviceIsConnected = true;
-		
+
 	}
 
 	return outputPose;
-	
+}
 
+inline T5_Vec3 TranslateByHalfIPD(const float halfIPD, const T5_Quat& headRot, const T5_Vec3& position)
+{
+	glm::quat rot;
+	rot.x = headRot.x;
+	rot.y = headRot.y;
+	rot.z = headRot.z;
+	rot.w = headRot.w;
+
+	glm::vec3 pos{ position.x, position.y, position.z };
+	glm::vec3 ipdOffset{ halfIPD, 0, 0 };
+
+	const auto res = pos + rot * ipdOffset;
+	return { res.x, res.y, res.z };
+}
+
+void T5RuntimeInterface::SendFrame(ID3D11Texture2D* eyeTextures[2], const T5_GlassesPose& originalPose)
+{
+	T5_FrameInfo frameInfo{};
+	frameInfo.leftTexHandle = eyeTextures[0];
+	frameInfo.rightTexHandle = eyeTextures[1];
+	frameInfo.isSrgb = false;
+	frameInfo.isUpsideDown = false;
+
+	//It seems it is required to send back the pose of the virtual camera to T5 
+	frameInfo.posLVC_GBD = TranslateByHalfIPD(-ipd_ / 2, originalPose.rotToGLS_GBD, originalPose.posGLS_GBD);
+	frameInfo.posRVC_GBD = TranslateByHalfIPD(ipd_ / 2, originalPose.rotToGLS_GBD, originalPose.posGLS_GBD);
+	frameInfo.rotToLVC_GBD = originalPose.rotToGLS_GBD;
+	frameInfo.rotToRVC_GBD = originalPose.rotToGLS_GBD;
+	frameInfo.vci.startY_VCI = -tan(glm::radians(renderingFov) * 0.5f);
+	frameInfo.vci.startX_VCI = frameInfo.vci.startY_VCI * (float)framebufferWidth / (float)framebufferHeight;
+	frameInfo.vci.width_VCI = -2.0f * frameInfo.vci.startX_VCI;
+	frameInfo.vci.height_VCI = -2.0f * frameInfo.vci.startY_VCI;
+	frameInfo.texHeight_PIX = framebufferHeight;
+	frameInfo.texWidth_PIX = framebufferWidth;
+
+	const auto result = glasses_->sendFrame(&frameInfo);
+	if(!result)
+	{
+		utils::log("Failed to send frame to glasses.\n");
+	}
 }

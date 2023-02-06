@@ -1,15 +1,23 @@
 #pragma once
 #include "include/TiltFiveNative.hpp"
-#include "../deps/openvr/openvr_driver.h"
+#include "openvr_driver.h"
+#include "d3d11.h"
 
 class T5RuntimeInterface
 {
 public:
-	void InitializeHeadset();
+	void InitializeHeadset(ID3D11Device* pDevice);
 	vr::DriverPose_t GetPose();
+
+	void SendFrame(ID3D11Texture2D* eyeTextures[2], const T5_GlassesPose& originalPose);
 
 private:
 	std::shared_ptr<tiltfive::Glasses> glasses_;
 
 	bool glassesInitialized_ = false;
+
+	double ipd_{ 0 };
+	int framebufferWidth = 1216;
+	int framebufferHeight = 768;
+	float renderingFov = 48;
 };
