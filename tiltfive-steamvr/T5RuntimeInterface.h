@@ -17,7 +17,7 @@ private:
 	bool glassesInitialized_ = false;
 
 	double ipd_{ 0 };
-	int framebufferWidth = 1216;
-	int framebufferHeight = 768;
+	uint16_t framebufferWidth = 1216;
+	uint16_t framebufferHeight = 768;
 	float renderingFov = 48;
 };

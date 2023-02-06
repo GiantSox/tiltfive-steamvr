@@ -1,5 +1,7 @@
 #include "DirectModeComponent.h"
 
+#include <cassert>
+
 void DirectModeComponent::InitD3D()
 {
 	DWORD createFlags = 0;
@@ -13,8 +15,9 @@ void DirectModeComponent::InitD3D()
 	auto result = D3D11CreateDevice(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, createFlags, nullptr, 0,
 		D3D11_SDK_VERSION, &dxDevice_, &featLevel, &dxDeviceContext_);
 
+	assert(result == S_OK);
 
-	t5RuntimeInterface_.InitializeHeadset();
+	t5RuntimeInterface_.InitializeHeadset(dxDevice_);
 
 	dxInitialized_ = true;
 }
@@ -115,6 +118,6 @@ void DirectModeComponent::Present(vr::SharedTextureHandle_t syncTexture)
 
 	//Can we call this here? Who knows!
 	auto nextFramePose = t5RuntimeInterface_.GetPose();
-	//I am pretty sure index 0 is always the HMD. But this is still a little hacky and should be fixed.
-	vr::VRServerDriverHost()->TrackedDevicePoseUpdated(0, nextFramePose, sizeof(nextFramePose));
+
+	vr::VRServerDriverHost()->TrackedDevicePoseUpdated(vr::k_unTrackedDeviceIndex_Hmd, nextFramePose, sizeof(nextFramePose));
 }

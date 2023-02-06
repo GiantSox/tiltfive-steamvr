@@ -59,7 +59,6 @@ vr::DriverPose_t T5RuntimeInterface::GetPose()
 {
 	vr::DriverPose_t outputPose = { 0 };
 
-
 	if (!glassesInitialized_)
 		return outputPose;
 
@@ -84,17 +83,12 @@ vr::DriverPose_t T5RuntimeInterface::GetPose()
 
 inline T5_Vec3 TranslateByHalfIPD(const float halfIPD, const T5_Quat& headRot, const T5_Vec3& position)
 {
-	glm::quat rot;
-	rot.x = headRot.x;
-	rot.y = headRot.y;
-	rot.z = headRot.z;
-	rot.w = headRot.w;
+	const glm::quat rot(headRot.w, headRot.x, headRot.y, headRot.z);
+	const glm::vec3 pos{ position.x, position.y, position.z };
+	const glm::vec3 ipdOffset{ halfIPD, 0, 0 };
 
-	glm::vec3 pos{ position.x, position.y, position.z };
-	glm::vec3 ipdOffset{ halfIPD, 0, 0 };
-
-	const auto res = pos + rot * ipdOffset;
-	return { res.x, res.y, res.z };
+	const auto out = pos + rot * ipdOffset;
+	return { out.x, out.y, out.z };
 }
 
 void T5RuntimeInterface::SendFrame(ID3D11Texture2D* eyeTextures[2], const T5_GlassesPose& originalPose)
