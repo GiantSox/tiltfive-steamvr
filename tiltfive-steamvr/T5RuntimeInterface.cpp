@@ -34,7 +34,7 @@ void T5RuntimeInterface::InitializeHeadset(ID3D11Device* pDevice)
 	glasses_ = *glassesObtainResult;
 
 	auto glassesFriendlyName = glasses_->getFriendlyName();
-	utils::log("Using " + (*glassesFriendlyName));
+	utils::log("Using " + *glassesFriendlyName);
 
 	auto connectionHelper = glasses_->createConnectionHelper("Tilt Five SteamVR Driver");
 
@@ -51,6 +51,8 @@ void T5RuntimeInterface::InitializeHeadset(ID3D11Device* pDevice)
 	const auto ipdResult = glasses_->getIpd();
 	if (ipdResult)
 		ipd_ = *ipdResult;
+
+	//we cannnot do anything useful, unless we're in exclusive mode
 	if (isExclusive)
 		glassesInitialized_ = glasses_->initGraphicsContext(kT5_GraphicsApi_D3D11, (LPVOID)pDevice) ? true : false;
 }
@@ -63,19 +65,31 @@ vr::DriverPose_t T5RuntimeInterface::GetPose()
 		return outputPose;
 
 	auto poseResult = glasses_->getLatestGlassesPose(kT5_GlassesPoseUsage_GlassesPresentation);
-	if (poseResult) {
-		const auto& pose = poseResult;
+	if (poseResult) 
+	{
+		const auto& pose = *poseResult;
+
+		//TODO the co-ordinate system of T5 and of SteamVR do not align
+		//TODO maybe you'll want to be able to scale up or down the world so the display in the T5 headset makes any sense.
 
 		outputPose.qRotation = vr::HmdQuaternion_t{
-			pose->rotToGLS_GBD.w, pose->rotToGLS_GBD.x, pose->rotToGLS_GBD.y, pose->rotToGLS_GBD.z };
-		outputPose.vecPosition[0] = pose->posGLS_GBD.x;
-		outputPose.vecPosition[1] = pose->posGLS_GBD.y;
-		outputPose.vecPosition[2] = pose->posGLS_GBD.z;
+			pose.rotToGLS_GBD.w,
+			pose.rotToGLS_GBD.x,
+			pose.rotToGLS_GBD.y,
+			pose.rotToGLS_GBD.z };
+
+		outputPose.vecPosition[0] = pose.posGLS_GBD.x;
+		outputPose.vecPosition[1] = pose.posGLS_GBD.y;
+		outputPose.vecPosition[2] = pose.posGLS_GBD.z;
 
 		outputPose.result = vr::ETrackingResult::TrackingResult_Running_OK;
 		outputPose.poseIsValid = true;
 		outputPose.deviceIsConnected = true;
+	}
 
+	else
+	{
+		outputPose.result = vr::ETrackingResult::TrackingResult_Running_OutOfRange; //Most likely user looked away from gameboard.
 	}
 
 	return outputPose;

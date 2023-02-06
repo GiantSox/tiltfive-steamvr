@@ -9,6 +9,7 @@ public:
 	void InitializeHeadset(ID3D11Device* pDevice);
 	vr::DriverPose_t GetPose();
 
+	//Must *only* be called for a frame where a valid T5 pose was acquired. Failing to do so result in silent asyncrhoneous errors from the TiltFiveNative library.
 	void SendFrame(ID3D11Texture2D* eyeTextures[2], const T5_GlassesPose& originalPose);
 
 private:
