@@ -8,11 +8,11 @@ class DirectModeComponent : vr::IVRDriverDirectModeComponent
 public:
 	DirectModeComponent();
 
-	virtual void CreateSwapTextureSet(uint32_t unPid, const SwapTextureSetDesc_t* pSwapTextureSetDesc, SwapTextureSet_t* pOutSwapTextureSet);
-	virtual void DestroySwapTextureSet(vr::SharedTextureHandle_t sharedTextureHandle);
-	virtual void GetNextSwapTextureSetIndex(vr::SharedTextureHandle_t sharedTextureHandles[2], uint32_t(*pIndices)[2]);
-	virtual void SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2]);
-	virtual void Present(vr::SharedTextureHandle_t syncTexture);
+	void CreateSwapTextureSet(uint32_t unPid, const SwapTextureSetDesc_t* pSwapTextureSetDesc, SwapTextureSet_t* pOutSwapTextureSet) override;
+	void DestroySwapTextureSet(vr::SharedTextureHandle_t sharedTextureHandle) override;
+	void GetNextSwapTextureSetIndex(vr::SharedTextureHandle_t sharedTextureHandles[2], uint32_t(*pIndices)[2]) override;
+	void SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2]) override;
+	void Present(vr::SharedTextureHandle_t syncTexture) override;
 protected:
 
 	void InitD3D();
