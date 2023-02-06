@@ -1,5 +1,5 @@
 #pragma once
-#include "../deps/openvr/openvr_driver.h"
+#include "openvr_driver.h"
 #include "t5headset.h"
 
 class TiltFiveSteamVRDriver : public vr::IServerTrackedDeviceProvider

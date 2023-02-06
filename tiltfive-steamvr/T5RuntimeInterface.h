@@ -1,5 +1,5 @@
 #pragma once
-#include "../deps/TiltFive/include/include/TiltFiveNative.hpp"
+#include "include/TiltFiveNative.hpp"
 #include "../deps/openvr/openvr_driver.h"
 
 class T5RuntimeInterface
