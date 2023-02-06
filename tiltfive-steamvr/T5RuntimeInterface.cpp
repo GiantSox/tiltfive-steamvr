@@ -52,7 +52,7 @@ void T5RuntimeInterface::InitializeHeadset(ID3D11Device* pDevice)
 	if (ipdResult)
 		ipd_ = *ipdResult;
 	if (isExclusive)
-		glassesInitialized_ = glasses_->initGraphicsContext(kT5_GraphicsApi_D3d, (LPVOID)pDevice) ? true : false;
+		glassesInitialized_ = glasses_->initGraphicsContext(kT5_GraphicsApi_D3D11, (LPVOID)pDevice) ? true : false;
 }
 
 vr::DriverPose_t T5RuntimeInterface::GetPose()
@@ -63,7 +63,7 @@ vr::DriverPose_t T5RuntimeInterface::GetPose()
 	if (!glassesInitialized_)
 		return outputPose;
 
-	auto poseResult = glasses_->getLatestGlassesPose();
+	auto poseResult = glasses_->getLatestGlassesPose(kT5_GlassesPoseUsage_GlassesPresentation);
 	if (poseResult) {
 		const auto& pose = poseResult;
 
