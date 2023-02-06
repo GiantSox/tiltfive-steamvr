@@ -104,6 +104,12 @@ void DirectModeComponent::GetNextSwapTextureSetIndex(vr::SharedTextureHandle_t s
 
 void DirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 {
+	ID3D11Texture2D* eyeTex[2];
+	for (int i = 0; i < 2; ++i)
+		dxDevice_->OpenSharedResource((HANDLE)perEye[i].hTexture, __uuidof(ID3D11Texture2D), (void**)&eyeTex[i]);
+
+
+	t5RuntimeInterface_.SendFrame(eyeTex, t5RuntimeInterface_.GetLastPose());
 }
 
 void DirectModeComponent::DoTrack()
@@ -136,7 +142,5 @@ void DirectModeComponent::Present(vr::SharedTextureHandle_t syncTexture)
 
 	dxgiMutex->ReleaseSync(0);
 	dxgiMutex->Release();
-
-	vr::VRServerDriverHost()->VsyncEvent(0);
 }
 

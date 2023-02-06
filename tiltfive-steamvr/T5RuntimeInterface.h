@@ -17,10 +17,16 @@ public:
 
 	~T5RuntimeInterface();
 
+	T5_GlassesPose GetLastPose() const
+	{
+		return lastPose_;
+	}
+
 private:
 
 	T5_Context t5ctx;
 	T5_Glasses glassesHandle;
+	T5_GlassesPose lastPose_;
 
 	bool glassesInitialized_ = false;
 

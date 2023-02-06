@@ -155,6 +155,8 @@ vr::DriverPose_t T5RuntimeInterface::GetPose()
 		outputPose.result = vr::ETrackingResult::TrackingResult_Running_OK;
 		outputPose.poseIsValid = true;
 		outputPose.deviceIsConnected = true;
+
+		lastPose_ = pose;
 	}
 
 	else

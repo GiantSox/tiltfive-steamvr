@@ -13,11 +13,14 @@ public:
 	void DestroySwapTextureSet(vr::SharedTextureHandle_t sharedTextureHandle) override;
 	void GetNextSwapTextureSetIndex(vr::SharedTextureHandle_t sharedTextureHandles[2], uint32_t(*pIndices)[2]) override;
 	void SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2]) override;
-	void DoTrack();
 	void Present(vr::SharedTextureHandle_t syncTexture) override;
+
+	void DoTrack();
+
 protected:
 
 	void InitD3D();
+
 
 	bool dxInitialized_ = false;
 	ID3D11Device* dxDevice_ = nullptr;

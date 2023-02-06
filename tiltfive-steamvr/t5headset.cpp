@@ -7,6 +7,12 @@ void T5Headset::NotifySteamVROfMyExistence()
 
 vr::EVRInitError T5Headset::Activate(uint32_t unObjectId)
 {
+	if(unObjectId == 0)
+	{
+		auto vr_properties = vr::VRProperties();
+		auto prop_container = vr_properties->TrackedDeviceToPropertyContainer(unObjectId);
+		vr_properties->SetStringProperty(prop_container, vr::Prop_TrackingSystemName_String, "TiltFive");
+	}
 	return vr::EVRInitError::VRInitError_None;
 }
 
