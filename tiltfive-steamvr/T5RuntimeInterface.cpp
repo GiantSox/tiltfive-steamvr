@@ -6,6 +6,7 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/quaternion.hpp"
 
+#include <format>
 void T5RuntimeInterface::InitializeHeadset(ID3D11Device* pDevice)
 {
 
@@ -155,8 +156,17 @@ vr::DriverPose_t T5RuntimeInterface::GetPose()
 		outputPose.result = vr::ETrackingResult::TrackingResult_Running_OK;
 		outputPose.poseIsValid = true;
 		outputPose.deviceIsConnected = true;
-
 		lastPose_ = pose;
+
+		OutputDebugStringA(std::format("pose pos({},{},{}) rot({},{},{},{})\n",
+			outputPose.vecPosition[0],
+			outputPose.vecPosition[1],
+			outputPose.vecPosition[2],
+			outputPose.qRotation.x,
+			outputPose.qRotation.y,
+			outputPose.qRotation.z,
+			outputPose.qRotation.w
+			).c_str());
 	}
 
 	else
@@ -179,11 +189,14 @@ inline T5_Vec3 TranslateByHalfIPD(const float halfIPD, const T5_Quat& headRot, c
 
 void T5RuntimeInterface::SendFrame(ID3D11Texture2D* eyeTextures[2], const T5_GlassesPose& originalPose)
 {
+
+	D3D11_TEXTURE2D_DESC textureDesc;
+	(*eyeTextures)->GetDesc(&textureDesc);
 	T5_FrameInfo frameInfo{};
 	frameInfo.leftTexHandle = eyeTextures[0];
 	frameInfo.rightTexHandle = eyeTextures[1];
-	frameInfo.isSrgb = false;
-	frameInfo.isUpsideDown = false;
+	frameInfo.isSrgb = true;
+	frameInfo.isUpsideDown = true;
 
 	//It seems it is required to send back the pose of the virtual camera to T5 
 	frameInfo.posLVC_GBD = TranslateByHalfIPD(-ipd_ / 2, originalPose.rotToGLS_GBD, originalPose.posGLS_GBD);

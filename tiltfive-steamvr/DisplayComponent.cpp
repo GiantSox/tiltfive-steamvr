@@ -13,8 +13,8 @@ void DisplayComponent::GetWindowBounds(int32_t* pnX, int32_t* pnY, uint32_t* pnW
 	//Not relevant, we're not using extended mode.
 	*pnX = 0;
 	*pnY = 0;
-	*pnWidth = 1000;
-	*pnHeight = 1000;
+	*pnWidth = 1216;
+	*pnHeight = 768;
 }
 
 bool DisplayComponent::IsDisplayOnDesktop()
@@ -33,16 +33,16 @@ bool DisplayComponent::IsDisplayRealDisplay()
 void DisplayComponent::GetRecommendedRenderTargetSize(uint32_t* pnWidth, uint32_t* pnHeight)
 {
 	//TODO: obviously these need to be changed to real values.
-	*pnWidth = 1000;
-	*pnHeight = 1000;
+	*pnWidth = 1216;
+	*pnHeight = 768;
 }
 
 void DisplayComponent::GetEyeOutputViewport(vr::EVREye eEye, uint32_t* pnX, uint32_t* pnY, uint32_t* pnWidth, uint32_t* pnHeight)
 {
 	*pnX = 0;
 	*pnY = 0;
-	*pnWidth = 1000;
-	*pnHeight = 1000;
+	*pnWidth = 1216;
+	*pnHeight = 768;
 }
 
 void DisplayComponent::GetProjectionRaw(vr::EVREye eEye, float* pfLeft, float* pfRight, float* pfTop, float* pfBottom)

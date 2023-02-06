@@ -18,7 +18,7 @@ public:
 	~T5RuntimeInterface();
 
 	T5_GlassesPose GetLastPose() const
-	{
+	{	
 		return lastPose_;
 	}
 
