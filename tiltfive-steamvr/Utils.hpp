@@ -1,18 +1,33 @@
 #pragma once
 #include <string>
 
-#include "DirectModeComponent.h"
+#include "Windows.h"
 
-
-namespace utils
+struct utils
 {
-	inline void log(LPCSTR message)
+	static void OpenDebugConsole()
 	{
-		OutputDebugStringA(message);
+#ifdef _DEBUG
+		AllocConsole();
+#endif
 	}
 
-	inline void log(const std::string& message)
+	static void log(LPCSTR message)
+	{
+		OutputDebugStringA(message);
+
+#ifdef _DEBUG
+		if (HANDLE consoleOutput = GetStdHandle(STD_OUTPUT_HANDLE); consoleOutput != INVALID_HANDLE_VALUE)
+		{
+			const auto byteLen = strlen(message);
+			DWORD nbBytesWritten;
+			(void)WriteFile(consoleOutput, message, byteLen, &nbBytesWritten, nullptr);
+		}
+#endif
+	}
+
+	static void log(const std::string& message)
 	{
 		log(message.c_str());
 	}
-}
+};

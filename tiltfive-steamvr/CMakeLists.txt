@@ -20,4 +20,4 @@ target_include_directories(tiltfive-steamvr PRIVATE
 	"${CMAKE_SOURCE_DIR}/deps/glm/"
 )
 
-install(TARGETS tiltfive-steamvr DESTINATION ../bin/win64)
+install(TARGETS tiltfive-steamvr DESTINATION ${CMAKE_SOURCE_DIR}/bin/win64)

@@ -1,5 +1,6 @@
 ﻿#include "tiltfive-steamvr.h"
 #include "driver.h"
+#include "Utils.hpp"
 
 //I may or may not delete this comment later, but I've been having a very hard time focusing these past few days,
 // and can't really tell if journaling or working on this project is going to be the best use of my time right now.
@@ -61,4 +62,41 @@ HMD_DLL_EXPORT void* HmdDriverFactory(const char* pInterfaceName, int* pReturnCo
 		*pReturnCode = vr::VRInitError_Init_InterfaceNotFound;
 
 	return NULL;
+}
+
+
+BOOL WINAPI DllMain(
+    HINSTANCE hinstDLL,  // handle to DLL module
+    DWORD fdwReason,     // reason for calling function
+    LPVOID lpvReserved)  // reserved
+{
+    // Perform actions based on the reason for calling.
+    switch (fdwReason)
+    {
+    case DLL_PROCESS_ATTACH:
+        // Initialize once for each new process.
+        // Return FALSE to fail DLL load.
+		MessageBoxA(nullptr, "Do it you won't", "Attach a debugger now poopoohead", MB_ICONINFORMATION | MB_OK);
+        utils::OpenDebugConsole(); 
+        break;
+
+    case DLL_THREAD_ATTACH:
+        // Do thread-specific initialization.
+        break;
+
+    case DLL_THREAD_DETACH:
+        // Do thread-specific cleanup.
+        break;
+
+    case DLL_PROCESS_DETACH:
+
+        if (lpvReserved != nullptr)
+        {
+            break; // do not do cleanup if process termination scenario
+        }
+
+        // Perform any necessary cleanup.
+        break;
+    }
+    return TRUE;  // Successful DLL_PROCESS_ATTACH.
 }

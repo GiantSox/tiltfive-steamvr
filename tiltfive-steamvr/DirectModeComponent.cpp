@@ -2,6 +2,8 @@
 
 #include <cassert>
 
+using namespace std::chrono_literals;
+
 void DirectModeComponent::InitD3D()
 {
 	DWORD createFlags = 0;
@@ -20,6 +22,19 @@ void DirectModeComponent::InitD3D()
 	t5RuntimeInterface_.InitializeHeadset(dxDevice_);
 
 	dxInitialized_ = true;
+
+	T5PumpThread = std::thread{ [&]
+	{
+		while (Tracking)
+		{
+			std::this_thread::sleep_for(1ms);
+			DoTrack();
+		}
+	} };
+
+	SetThreadDescription((HANDLE)T5PumpThread.native_handle(), L"TiltFive SteamVR Tracking Thread");
+	T5PumpThread.detach();
+
 }
 
 DirectModeComponent::DirectModeComponent()
@@ -91,6 +106,14 @@ void DirectModeComponent::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 {
 }
 
+void DirectModeComponent::DoTrack()
+{
+	if (!t5RuntimeInterface_.IsInitialized())return;
+
+	auto nextFramePose = t5RuntimeInterface_.GetPose();
+	vr::VRServerDriverHost()->TrackedDevicePoseUpdated(vr::k_unTrackedDeviceIndex_Hmd, nextFramePose, sizeof(nextFramePose));
+}
+
 void DirectModeComponent::Present(vr::SharedTextureHandle_t syncTexture)
 {
 	//todo: caching so that we don't call opensharedresource every constantly?
@@ -109,15 +132,11 @@ void DirectModeComponent::Present(vr::SharedTextureHandle_t syncTexture)
 		return;
 	}
 
-	//TODO: REMOVE REMOVE REMOVE REMOVE
-	Sleep(6);
+	std::this_thread::sleep_for(6ms);
 
 	dxgiMutex->ReleaseSync(0);
 	dxgiMutex->Release();
 
-
-	//Can we call this here? Who knows!
-	auto nextFramePose = t5RuntimeInterface_.GetPose();
-
-	vr::VRServerDriverHost()->TrackedDevicePoseUpdated(vr::k_unTrackedDeviceIndex_Hmd, nextFramePose, sizeof(nextFramePose));
+	vr::VRServerDriverHost()->VsyncEvent(0);
 }
+
