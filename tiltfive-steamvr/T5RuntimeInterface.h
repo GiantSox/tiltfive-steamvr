@@ -43,4 +43,7 @@ private:
 	std::string singleUserGlassesSN;
 	std::string singleUserGlassesFriendlyName;
 	char serviceVersion[T5_MAX_STRING_PARAM_LEN];
+
+	ID3D11Device* d3d11device;
+	ID3D11DeviceContext* d3d11ctx;
 };

@@ -9,6 +9,10 @@
 #include <format>
 void T5RuntimeInterface::InitializeHeadset(ID3D11Device* pDevice)
 {
+	//Cache d3d11 pointers
+	d3d11device = pDevice;
+	d3d11device->GetImmediateContext(&d3d11ctx);
+
 
 	T5_ClientInfo clientInfo{
 		"me.davidgoodman.tiltfivesteamvr", "0.1.0", 0,0
@@ -132,6 +136,10 @@ vr::DriverPose_t T5RuntimeInterface::GetPose()
 {
 	vr::DriverPose_t outputPose = { 0 };
 
+	//normalize these quaternions, but keep them identity.
+	outputPose.qDriverFromHeadRotation.w = 1;
+	outputPose.qWorldFromDriverRotation.w = 1;
+
 	if (!glassesInitialized_)
 		return outputPose;
 
@@ -167,6 +175,13 @@ vr::DriverPose_t T5RuntimeInterface::GetPose()
 			outputPose.qRotation.z,
 			outputPose.qRotation.w
 			).c_str());
+
+		//TODO since we have timestamps, we can cache the last frame and derive position over time to get speed
+		//TODO of the TODO since we will compute speed as mentioned by the above TODO item, we can derive  speed over time to compute acceleration
+		//NOTODO thankfully VR developers do not need jerk vectors. But we could derive  acceleration over time to computer jerk	
+		//NOTODO of the NOTODO in case you actually wanted to know about jerk, you might be interested in the rate of change of jerk. We could also derive jerk to get snap vectors!
+		//TODONT of the NOTODO of the NOTODO, could also derive  the snap to get the crackle.
+		//REALLY I SHOULD GO TO SLEEP TODO item: Could always derive  crackle to get pop. I do not even know in what field of engineering you actually need that.
 	}
 
 	else
@@ -189,12 +204,38 @@ inline T5_Vec3 TranslateByHalfIPD(const float halfIPD, const T5_Quat& headRot, c
 
 void T5RuntimeInterface::SendFrame(ID3D11Texture2D* eyeTextures[2], const T5_GlassesPose& originalPose)
 {
+	//You'll excuse me for this oh so horrible hack
+	static ID3D11Texture2D* intermediateTextures[2] = { nullptr, nullptr };
+	for (int i = 0; i < 2; ++i)
+	{
+		D3D11_TEXTURE2D_DESC textureDesc;
+		eyeTextures[i]->GetDesc(&textureDesc);
+		textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UINT; //SteamVR outputs _UNORM. as of NDK 1.3.0, T5 only compatible with UINT. 
 
-	D3D11_TEXTURE2D_DESC textureDesc;
-	(*eyeTextures)->GetDesc(&textureDesc);
+		//Lazilly allocate intermediate buffers. Also reallocate them in case they change sizes or
+		//any other metadata (unlikely)
+		if (!intermediateTextures[i]) [[unlikely]]
+		{
+		create:
+			d3d11device->CreateTexture2D(&textureDesc, nullptr, &intermediateTextures[i]);
+		}
+		else
+		{
+			D3D11_TEXTURE2D_DESC intermedateDesc;
+			intermediateTextures[i]->GetDesc(&intermedateDesc);
+			if (0 != memcmp(&intermedateDesc, &textureDesc, sizeof(D3D11_TEXTURE2D_DESC))) [[unlikely]]
+			{
+				intermediateTextures[i]->Release();
+				intermediateTextures[i] = nullptr;
+				goto create;
+			}
+		}
+		d3d11ctx->CopyResource(intermediateTextures[i], eyeTextures[i]);
+	}
+
 	T5_FrameInfo frameInfo{};
-	frameInfo.leftTexHandle = eyeTextures[0];
-	frameInfo.rightTexHandle = eyeTextures[1];
+	frameInfo.leftTexHandle = intermediateTextures[0];
+	frameInfo.rightTexHandle = intermediateTextures[1];
 	frameInfo.isSrgb = true;
 	frameInfo.isUpsideDown = true;
 
@@ -219,7 +260,7 @@ void T5RuntimeInterface::SendFrame(ID3D11Texture2D* eyeTextures[2], const T5_Gla
 
 T5RuntimeInterface::~T5RuntimeInterface()
 {
-	if(IsInitialized())
+	if (IsInitialized())
 	{
 		t5DestroyGlasses(&glassesHandle);
 		t5DestroyContext(&t5ctx);
